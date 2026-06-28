@@ -1,0 +1,23 @@
+# Major US news channels to scan for Trump / US government coverage.
+# Uses uploads playlist (1 quota unit per page) — much cheaper than search.
+channels:
+  - id: UCXIJgqnII2ZOINSWNOGFThQ
+    name: Fox News
+  - id: UCupv_j-OfiR_3eBwAgqVtCA
+    name: CNN
+  - id: UC16niRr50-MS5wiBdYyXgxQ
+    name: NBC News
+  - id: UC8p9vwSXbusQC37EUf0k9sA
+    name: CBS News
+  - id: UCnaMd5Cmp1eLrFWcplj2R6A
+    name: MSNBC
+  - id: UC79WFuVFdJjXOjmAdgK0zew
+    name: ABC News
+  - id: UC64LzO3MBhB1Q8gT3q1O5bQ
+    name: PBS NewsHour
+  - id: UCYxCY-6so2woMyV5n2-I_ng
+    name: The White House
+  - id: UC7bSjnCy9-c15wqksPck7FQ
+    name: BBC News
+  - id: UCzGsnBJ9DImoWJLv7-2E9Yw
+    name: Sky News

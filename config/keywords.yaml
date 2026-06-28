@@ -1,0 +1,11 @@
+# Keyword searches run against YouTube (100 quota units per query).
+# Keep this list focused to stay within daily API limits.
+queries:
+  - "Trump news today"
+  - "Trump White House"
+  - "US government news"
+  - "Congress Trump"
+  - "Trump press conference"
+  - "White House briefing"
+  - "Trump executive order"
+  - "US politics breaking"

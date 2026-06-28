@@ -1,0 +1,35 @@
+# How far back to look for fresh, relevant videos
+max_age_hours: 24
+
+# Minimum total views — filters out low-traction uploads
+min_views: 5000
+
+# Skip YouTube Shorts and very short clips (Vizard works best on long-form)
+min_duration_seconds: 120
+max_duration_seconds: 7200
+
+# Only include videos whose title or description match at least one term
+relevance_terms:
+  - trump
+  - white house
+  - congress
+  - senate
+  - executive order
+  - administration
+  - republican
+  - democrat
+  - government
+  - capitol
+  - president
+  - federal
+  - us news
+  - america
+
+# How many top candidates to keep in the output queue
+top_n: 15
+
+# Scoring weights
+weights:
+  views_per_hour: 1.0
+  engagement_rate: 10.0
+  like_ratio: 5.0
