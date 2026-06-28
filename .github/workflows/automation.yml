@@ -2,8 +2,8 @@ name: News Automation Pipeline
 
 on:
   schedule:
-    # 6am, 12pm, 6pm, 10pm Berlin (CEST = UTC+2)
-    - cron: "0 4,10,16,20 * * *"
+    # 8am + 8pm Berlin (CEST = UTC+2) — 2 runs/day
+    - cron: "0 6,18 * * *"
   workflow_dispatch:
 
 concurrency:
@@ -24,12 +24,14 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Restore dedupe state
+      - name: Restore pipeline state
         uses: actions/cache@v4
         with:
-          path: output/submitted.json
-          key: submitted-state-v1
-          restore-keys: submitted-state-
+          path: |
+            output/submitted.json
+            output/daily_counts.json
+          key: pipeline-state-v2
+          restore-keys: pipeline-state-
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -47,5 +49,6 @@ jobs:
           name: run-output-${{ github.run_number }}
           path: |
             output/submitted.json
+            output/daily_counts.json
             output/candidates.json
           retention-days: 30

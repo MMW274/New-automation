@@ -1,5 +1,7 @@
-# Keyword searches cost 100 quota units each (800/day for 8 queries).
-# Channel scans cost ~1 unit each — prefer channels when quota is tight.
+# Discovery settings
+# Keyword search costs 100 YouTube API units per query — disable for cloud runs.
+keyword_search_enabled: false
+
 queries:
   - "Trump news today"
   - "Trump White House"

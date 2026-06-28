@@ -29,8 +29,12 @@ def run_discovery(*, hours: int | None = None, dry_run: bool = False) -> int:
     channel_sources = scan_channels(client, config)
     print(f"  Channel uploads found: {len(channel_sources)}")
 
-    keyword_sources = search_by_keywords(client, config)
-    print(f"  Keyword search matches: {len(keyword_sources)}")
+    if config.keyword_search_enabled:
+        keyword_sources = search_by_keywords(client, config)
+        print(f"  Keyword search matches: {len(keyword_sources)}")
+    else:
+        keyword_sources = {}
+        print("  Keyword search: disabled")
 
     sources = {**keyword_sources, **channel_sources}
     unique_ids = list(sources.keys())

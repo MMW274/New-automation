@@ -18,8 +18,8 @@ __pycache__/
 output/candidates.json
 output/candidates.csv
 output/submitted.json
+output/daily_counts.json
 output/history/
 __MACOSX/
-.DS_Store
 .DS_Store
 output/automation.log

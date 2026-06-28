@@ -6,29 +6,21 @@ Prioritized improvements for the News Channel Automation pipeline.
 
 ## High priority
 
-### 1. Spread clip publishing over time (not all at once)
+### 1. ~~Spread clip publishing over time~~ ✅ Done
 
-**Issue:** 10 clips × 3 platforms = 30 posts in ~2 minutes. TikTok and YouTube may flag burst posting.
+`publish_stagger_minutes: 45` — clips scheduled 45 min apart via Vizard `publishTime`.
 
-**Fix:** Add `publish_stagger_minutes: 30` — space each clip 30–60 min apart while still using immediate publish (different `publishTime` values).
+### 2. ~~Enforce per-platform daily caps~~ ✅ Done
 
-### 2. Enforce per-platform daily caps in code
+`output/daily_counts.json` tracks posts per platform. Stops when YouTube (3), TikTok (4), etc. hit daily limits.
 
-**Issue:** `platform_daily_limits` in config is reference-only today.
+### 3. ~~YouTube API quota — channel-first mode~~ ✅ Done
 
-**Fix:** Track posts per platform per day in `output/daily_counts.json` (cached on GitHub Actions). Stop publishing to TikTok after 4 clips/day, YouTube after 3, etc.
+`keyword_search_enabled: false` in `config/keywords.yaml`. Channel scans only (~11 quota units).
 
-### 3. YouTube API quota — channel-first mode
+### 4. ~~Source diversity filter~~ ✅ Done
 
-**Issue:** 8 keyword searches = 800 quota units. Local testing exhausted daily limit.
-
-**Fix:** Add `keyword_search_enabled: false` in config for cloud runs. Channel scans (~11 units) are enough with 11 subscriptions. Request quota increase in Google Cloud if needed.
-
-### 4. Source diversity filter
-
-**Issue:** Cloud run picked 3 Fox News videos on the same Iran story.
-
-**Fix:** Max 1 video per channel per run; prefer different channels/topics in top picks.
+`max_one_video_per_channel: true` — max 1 source video per news channel per run.
 
 ---
 
@@ -42,9 +34,9 @@ Set `template_id` in `config/vizard.yaml` from Vizard workspace to match your ma
 
 Add GitHub Actions step to send email/Discord/Telegram on workflow failure. Success optional.
 
-### 7. Reduce cloud frequency
+### 7. ~~Reduce cloud frequency~~ ✅ Done
 
-4 runs/day × 15 credits = ~60 Vizard credits/day. Consider **2 runs/day** (8am + 8pm Berlin) until you confirm ROI.
+Reduced to **2 runs/day** (8am + 8pm Berlin) in GitHub Actions workflow.
 
 ### 8. Google Sheets sync
 

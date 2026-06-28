@@ -1,4 +1,4 @@
-# Vizard settings — matched to your manual UI workflow
+# Vizard settings
 # Docs: https://docs.vizard.ai/docs/quickstart
 
 lang: en
@@ -17,43 +17,44 @@ template_id: null
 max_clip_number: 20
 
 # --- Publishing ---
-publish_immediately: true
 min_viral_score: 8.5
-publish_gap_seconds: 15
 
-# Process 2-3 different source videos per run; cap total clips (~platform safe limits)
+# Stagger each clip by N minutes (avoids burst-posting spam flags)
+publish_stagger_minutes: 45
+publish_gap_seconds: 10
+
+# Source selection
 source_videos_per_run: 3
-max_clips_per_run: 10
-max_clips_per_source: 4
+max_clips_per_run: 4
+max_clips_per_source: 2
+max_one_video_per_channel: true
 
-# Publish to EVERY active account connected in Vizard (YouTube, TikTok, Facebook, X, etc.)
+# Publish to ALL active Vizard accounts
 publish_all_connected: true
 
-# Optional name hints if publish_all_connected is false
 social_accounts:
   youtube: Fill Viz
   tiktok: today_news98
-  twitter: Fill Viz   # X / Twitter — connected in Vizard
-  # facebook: skip (verification issues)
+  twitter: Fill Viz
 
-# Platform safe daily limits (reference — we stay under these per run)
-# YouTube Shorts: 1-3/day sweet spot | TikTok: 1-4/day | Facebook: 1-5/day | X: higher
+# Enforced daily caps per platform (unique clips per calendar day, UTC)
 platform_daily_limits:
   youtube: 3
   tiktok: 4
-  facebook: 5
   twitter: 10
+  facebook: 5
   instagram: 5
   linkedin: 3
 
-# Legacy scheduling (only if publish_immediately: false)
+poll_interval_seconds: 30
+poll_timeout_seconds: 1800
+dedupe_hours: 48
+
+# Legacy (unused when stagger is active)
+publish_immediately: false
 auto_schedule: false
 clips_per_day: 8
 post_start_hour: 4
 post_end_hour: 19
 timezone: Europe/Berlin
 start_offset_days: 1
-
-poll_interval_seconds: 30
-poll_timeout_seconds: 1800
-dedupe_hours: 48
