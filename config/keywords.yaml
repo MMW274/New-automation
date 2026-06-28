@@ -1,11 +1,7 @@
-# Keyword searches run against YouTube (100 quota units per query).
-# Keep this list focused to stay within daily API limits.
+# Keyword searches cost 100 quota units each (800/day for 8 queries).
+# Channel scans cost ~1 unit each — prefer channels when quota is tight.
 queries:
   - "Trump news today"
   - "Trump White House"
   - "US government news"
-  - "Congress Trump"
   - "Trump press conference"
-  - "White House briefing"
-  - "Trump executive order"
-  - "US politics breaking"

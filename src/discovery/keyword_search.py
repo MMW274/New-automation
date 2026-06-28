@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
 
+from googleapiclient.errors import HttpError
+
 from src.config import AppConfig
 from src.discovery.youtube_client import YouTubeClient
 
@@ -12,7 +14,13 @@ def search_by_keywords(client: YouTubeClient, config: AppConfig) -> dict[str, st
     discovered: dict[str, str] = {}
 
     for query in config.keyword_queries:
-        video_ids = client.search_videos(query, published_after)
+        try:
+            video_ids = client.search_videos(query, published_after)
+        except HttpError as error:
+            if error.resp.status in (403, 429):
+                print(f"  Warning: YouTube search quota hit — skipping remaining keyword searches.")
+                break
+            raise
         for video_id in video_ids:
             discovered[video_id] = f"search:{query}"
 

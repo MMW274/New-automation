@@ -28,7 +28,9 @@ def run_full_pipeline(*, hours: int | None = None, dry_run: bool = False) -> Non
 
     print(f"Scanning last {app_config.max_age_hours} hours...")
     channel_sources = scan_channels(client, app_config)
+    print(f"  Channel uploads found: {len(channel_sources)}")
     keyword_sources = search_by_keywords(client, app_config)
+    print(f"  Keyword search matches: {len(keyword_sources)}")
     sources = {**keyword_sources, **channel_sources}
     unique_ids = list(sources.keys())
 
