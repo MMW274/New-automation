@@ -10,12 +10,16 @@ Repo: https://github.com/MMW274/New-automation
 
 ### 2. Add secrets
 
-GitHub → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
+GitHub → **Settings** → **Secrets and variables** → **Actions**
+
+Create an **Environment** named `YOUTUBE_API_KEY`, then add these **environment secrets**:
 
 | Secret | Value |
 |--------|--------|
 | `YOUTUBE_API_KEY` | Your `AIzaSy...` key |
 | `VIZARDAI_API_KEY` | From Vizard workspace → API |
+
+> If you already added them under Environment `YOUTUBE_API_KEY`, you're set — the workflow uses that environment automatically.
 
 ### 3. Enable Actions
 

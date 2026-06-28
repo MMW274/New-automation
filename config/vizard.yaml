@@ -33,8 +33,8 @@ publish_all_connected: true
 social_accounts:
   youtube: Fill Viz
   tiktok: today_news98
-  facebook: ""
-  twitter: ""
+  twitter: Fill Viz   # X / Twitter — connected in Vizard
+  # facebook: skip (verification issues)
 
 # Platform safe daily limits (reference — we stay under these per run)
 # YouTube Shorts: 1-3/day sweet spot | TikTok: 1-4/day | Facebook: 1-5/day | X: higher

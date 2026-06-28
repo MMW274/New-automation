@@ -14,6 +14,8 @@ jobs:
   run-pipeline:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    # Secrets are stored under GitHub Environment "YOUTUBE_API_KEY" (not repo secrets)
+    environment: YOUTUBE_API_KEY
 
     steps:
       - uses: actions/checkout@v4
