@@ -40,15 +40,20 @@ jobs:
           path: |
             output/submitted.json
             output/daily_counts.json
+            output/dedupe_ids.json
+            output/review_queue.json
+            output/history
           key: pipeline-state-v3-${{ github.run_id }}
           restore-keys: |
             pipeline-state-v3-
             pipeline-state-v2-
 
       - name: Install dependencies
+        timeout-minutes: 5
         run: pip install -r requirements.txt
 
       - name: Run pipeline
+        timeout-minutes: 70
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           VIZARDAI_API_KEY: ${{ secrets.VIZARDAI_API_KEY }}
@@ -63,7 +68,9 @@ jobs:
             output/submitted.json
             output/daily_counts.json
             output/candidates.json
-          retention-days: 30
+            output/dedupe_ids.json
+            output/review_queue.json
+          retention-days: 90
 
       - name: Open failure issue
         if: failure()

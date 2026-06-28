@@ -32,6 +32,14 @@ smart_publish_slots: true
 # back silently to Vizard's default auto-caption on error.
 per_platform_captions: true
 
+# Content safety gate. When true, clip titles are screened against a
+# blocklist of terms that trigger TikTok / YouTube Shorts demonetization
+# or takedown (graphic violence, slurs, etc). Risky clips are held in
+# output/review_queue.json instead of published. Extend the list via
+# blocked_terms; default list lives in src/safety/content_filter.py.
+safety_filter_enabled: true
+blocked_terms: []
+
 # Legacy stagger — only used when smart_publish_slots: false, or as a
 # fallback when many clips contend for the same peak slot.
 publish_stagger_minutes: 45

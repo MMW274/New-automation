@@ -37,6 +37,8 @@ class AppConfig:
     sheets_id: str
     service_account_json: Path | None
     output_channel_id: str
+    trending_news_enabled: bool
+    trending_region: str
 
 
 @dataclass
@@ -76,6 +78,8 @@ class VizardConfig:
     platform_daily_limits: dict[str, int]
     smart_publish_slots: bool
     per_platform_captions: bool
+    safety_filter_enabled: bool
+    blocked_terms: list[str]
 
 
 def _load_yaml(path: Path) -> dict:
@@ -131,6 +135,8 @@ def load_config() -> AppConfig:
         output_channel_id=os.getenv(
             "OUTPUT_YOUTUBE_CHANNEL_ID", "UClUZaCTA-gBR2iB8LKAAhNw"
         ),
+        trending_news_enabled=bool(keywords_raw.get("trending_news_enabled", True)),
+        trending_region=str(keywords_raw.get("trending_region", "US")),
     )
 
 
@@ -180,4 +186,6 @@ def load_vizard_config() -> VizardConfig:
         platform_daily_limits=dict(raw.get("platform_daily_limits", {})),
         smart_publish_slots=bool(raw.get("smart_publish_slots", True)),
         per_platform_captions=bool(raw.get("per_platform_captions", True)),
+        safety_filter_enabled=bool(raw.get("safety_filter_enabled", True)),
+        blocked_terms=list(raw.get("blocked_terms", []) or []),
     )

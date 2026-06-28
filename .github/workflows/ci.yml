@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        timeout-minutes: 5
+        run: |
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Lint imports (syntax + import resolution)
+        timeout-minutes: 3
+        run: |
+          python -c "
+          import importlib
+          for m in [
+            'src.config',
+            'src.discovery.channel_scanner',
+            'src.discovery.rss_scanner',
+            'src.discovery.scorer',
+            'src.discovery.youtube_client',
+            'src.scheduler.optimal_slots',
+            'src.scheduler.run_pipeline',
+            'src.storage.dedupe_ledger',
+            'src.storage.pruner',
+            'src.storage.queue',
+            'src.storage.sheets',
+            'src.storage.daily_counts',
+            'src.safety.content_filter',
+            'src.vizard.client',
+            'src.vizard.pipeline',
+            'src.vizard.accounts',
+            'src.analytics.performance',
+          ]:
+            importlib.import_module(m)
+            print(f'ok: {m}')
+          "
+
+      - name: Run tests
+        timeout-minutes: 5
+        env:
+          YOUTUBE_API_KEY: "test-key-for-import-only"
+        run: pytest -q tests/

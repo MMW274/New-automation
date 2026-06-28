@@ -31,7 +31,7 @@ YouTube Discovery (11 channels, keyword search disabled to save quota)
 | 3 | Done | Cloud automation via GitHub Actions (3× daily) |
 | 4 | Done | Smart slot publishing + failure-issue notifications |
 | 5 | Done | RSS-first discovery (~0 quota); per-platform AI captions; Vizard retry/backoff; **permanent source + clip dedupe** |
-| 6 | Planned | Analytics feedback loop (YT + TikTok actuals → re-weight scorer); dynamic relevance terms (Google Trends); state pruning |
+| 6 | Done | Dedupe ledger split, monthly state pruner, weekly analytics snapshot, YT News-trending feed, content safety gate, pytest CI, Dependabot |
 
 ---
 

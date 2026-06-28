@@ -8,8 +8,14 @@ from typing import Any
 from src.config import OUTPUT_DIR, VizardConfig
 from src.discovery.scorer import ScoredVideo
 from src.scheduler.optimal_slots import next_optimal_slot
+from src.safety.content_filter import (
+    DEFAULT_BLOCKED_TERMS,
+    classify as safety_classify,
+    hold_for_review,
+)
 from src.vizard.accounts import PublishTarget, filter_clips_by_score, resolve_publish_targets
 from src.vizard.client import VizardClient, VizardError, VizardFatal, VizardSkipSource
+from src.storage import dedupe_ledger
 from src.storage.daily_counts import (
     can_publish,
     platform_slots_remaining,
@@ -33,18 +39,20 @@ def _save_submitted(records: list[dict[str, Any]]) -> None:
 def _all_submitted_video_ids() -> set[str]:
     """Every YouTube source video ever submitted — permanent dedupe key.
 
-    Once a source has reached this list it MUST NEVER be re-submitted, even
-    months later. The 48h `dedupe_hours` setting is intentionally ignored.
+    Reads BOTH the long-lived dedupe ledger AND the current submitted.json
+    (which may have been pruned to the recent window). Once a source has
+    reached either list it MUST NEVER be re-submitted, even years later.
     """
-    return {entry["video_id"] for entry in _load_submitted() if entry.get("video_id")}
+    from_log = {entry["video_id"] for entry in _load_submitted() if entry.get("video_id")}
+    return dedupe_ledger.video_ids() | from_log
 
 
 def _all_published_clip_ids() -> set[int]:
     """Defensive second layer: every Vizard finalVideoId we've ever published.
 
-    Prevents a duplicate clip from a re-processed source from going out again.
+    Reads BOTH the ledger and the current submitted.json.
     """
-    ids: set[int] = set()
+    ids: set[int] = set(dedupe_ledger.clip_ids())
     for entry in _load_submitted():
         for pub in entry.get("published", []) or []:
             cid = pub.get("clip_video_id")
@@ -163,8 +171,11 @@ def run_vizard_pipeline(
     project_id = client.create_project(candidate.url, candidate.title[:100])
     print(f"  projectId={project_id}")
 
-    # Record submission IMMEDIATELY so a mid-run crash still locks this source
-    # out of all future runs (permanent dedupe guarantee).
+    # Lock this source in the permanent ledger IMMEDIATELY so a mid-run crash,
+    # a pruned submitted.json, or a bad cache restore can never free it.
+    dedupe_ledger.remember_video(candidate.video_id)
+
+    # Record submission so a mid-run crash still locks this source out.
     pre_record = {
         "video_id": candidate.video_id,
         "url": candidate.url,
@@ -196,8 +207,31 @@ def run_vizard_pipeline(
                 print(f"  Skip clip {video_id} — already published in a prior run.")
                 continue
             already_published_clip_ids.add(video_id)
+            dedupe_ledger.remember_clip(video_id)
             title = str(clip.get("title", ""))
             score = clip.get("viralScore")
+
+            if getattr(config, "safety_filter_enabled", True):
+                blocked = (
+                    tuple(config.blocked_terms)
+                    if getattr(config, "blocked_terms", None)
+                    else DEFAULT_BLOCKED_TERMS
+                )
+                transcript = str(clip.get("transcript", "") or "")
+                verdict = safety_classify(f"{title} {transcript}", blocked_terms=blocked)
+                if not verdict.safe:
+                    print(f"  Held for review (safety: {verdict.reason}) — {title[:60]}")
+                    hold_for_review(
+                        {
+                            "video_id": video_id,
+                            "project_id": project_id,
+                            "title": title,
+                            "viral_score": score,
+                            "source": candidate.url,
+                            "matched_terms": verdict.matched_terms,
+                        }
+                    )
+                    continue
 
             eligible_targets = [
                 t

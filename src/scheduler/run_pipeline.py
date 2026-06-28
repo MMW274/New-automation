@@ -41,6 +41,20 @@ def run_full_pipeline(*, hours: int | None = None, dry_run: bool = False) -> Non
         print(f"  API fallback uploads: {len(api_sources)}")
         channel_sources.update(api_sources)
 
+    # YouTube News-trending — catches breaking stories outside our 11 channels
+    # (1 quota unit). Skipped gracefully if quota is exhausted.
+    if app_config.trending_news_enabled:
+        try:
+            trending_ids = client.trending_news_video_ids(
+                region_code=app_config.trending_region,
+            )
+            new_ids = [v for v in trending_ids if v not in channel_sources]
+            for vid in new_ids:
+                channel_sources[vid] = "trending:news"
+            print(f"  Trending News additions: {len(new_ids)}")
+        except Exception as error:  # noqa: BLE001
+            print(f"  Trending feed skipped ({error})")
+
     if app_config.keyword_search_enabled:
         keyword_sources = search_by_keywords(client, app_config)
         print(f"  Keyword search matches: {len(keyword_sources)}")
