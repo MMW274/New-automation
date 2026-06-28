@@ -44,12 +44,16 @@ def score_videos(
     scored: list[ScoredVideo] = []
 
     for video in videos:
-        video_id = video["id"]
-        snippet = video["snippet"]
+        video_id = video.get("id")
+        snippet = video.get("snippet")
+        content_details = video.get("contentDetails") or {}
+        duration = content_details.get("duration")
+
+        if not video_id or not snippet or not duration:
+            continue
+
         stats = video.get("statistics", {})
-        duration_seconds = YouTubeClient.parse_duration_seconds(
-            video["contentDetails"]["duration"]
-        )
+        duration_seconds = YouTubeClient.parse_duration_seconds(duration)
 
         view_count = int(stats.get("viewCount", 0))
         like_count = int(stats.get("likeCount", 0))
@@ -88,11 +92,17 @@ def score_videos(
             + like_ratio * float(weights.get("like_ratio", 5.0)) * 10000
         )
 
+        channel_title = snippet.get("channelTitle", "")
+        if scoring.trusted_channels and scoring.channel_boost > 1:
+            trusted = {name.lower() for name in scoring.trusted_channels}
+            if any(name in channel_title.lower() for name in trusted):
+                score *= scoring.channel_boost
+
         scored.append(
             ScoredVideo(
                 video_id=video_id,
                 title=title,
-                channel_title=snippet.get("channelTitle", ""),
+                channel_title=channel_title,
                 published_at=snippet["publishedAt"],
                 url=YouTubeClient.video_url(video_id),
                 view_count=view_count,

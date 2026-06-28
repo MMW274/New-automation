@@ -1,23 +1,24 @@
-# Major US news channels to scan for Trump / US government coverage.
-# Uses uploads playlist (1 quota unit per page) — much cheaper than search.
+# Channels you subscribe to + The White House (Trump/US gov source)
 channels:
-  - id: UCXIJgqnII2ZOINSWNOGFThQ
+  - id: UCXIJgqnII2ZOINSWNOGFThA
     name: Fox News
-  - id: UCupv_j-OfiR_3eBwAgqVtCA
+  - id: UCJFOER35ggIWwsXh2ZDnqyg
+    name: The Economic Times
+  - id: UCuFFtHWoLl5fauMMD5Ww2jA
+    name: CBC News
+  - id: UCupvZG-5ko_eiXAupbDfxWw
     name: CNN
-  - id: UC16niRr50-MS5wiBdYyXgxQ
-    name: NBC News
-  - id: UC8p9vwSXbusQC37EUf0k9sA
-    name: CBS News
-  - id: UCnaMd5Cmp1eLrFWcplj2R6A
-    name: MSNBC
-  - id: UC79WFuVFdJjXOjmAdgK0zew
-    name: ABC News
-  - id: UC64LzO3MBhB1Q8gT3q1O5bQ
-    name: PBS NewsHour
-  - id: UCYxCY-6so2woMyV5n2-I_ng
-    name: The White House
-  - id: UC7bSjnCy9-c15wqksPck7FQ
+  - id: UC16niRr50-MSBwiO3YDb3RA
     name: BBC News
-  - id: UCzGsnBJ9DImoWJLv7-2E9Yw
-    name: Sky News
+  - id: UCckHqySbfy5FcPP6MD_S-Yg
+    name: Times Of India
+  - id: UC8p1vwvWtl6T73JiExfWs1g
+    name: CBS News
+  - id: UCeY0bbntWzzVIaj2z3QigXg
+    name: NBC News
+  - id: UCIzXayRP7-P0ANpq-nD-h5g
+    name: The Sun
+  - id: UCBi2mrWuNuyYy4gbM6fU18Q
+    name: ABC News
+  - id: UCYxRlFDqcWM4y7FfpiAN3KQ
+    name: The White House

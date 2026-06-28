@@ -1,0 +1,49 @@
+name: News Automation Pipeline
+
+on:
+  schedule:
+    # 6am, 12pm, 6pm, 10pm Berlin (CEST = UTC+2)
+    - cron: "0 4,10,16,20 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: news-automation
+  cancel-in-progress: false
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Restore dedupe state
+        uses: actions/cache@v4
+        with:
+          path: output/submitted.json
+          key: submitted-state-v1
+          restore-keys: submitted-state-
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run pipeline
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+          VIZARDAI_API_KEY: ${{ secrets.VIZARDAI_API_KEY }}
+        run: python -m src.scheduler.run_pipeline
+
+      - name: Upload run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-output-${{ github.run_number }}
+          path: |
+            output/submitted.json
+            output/candidates.json
+          retention-days: 30

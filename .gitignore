@@ -1,4 +1,13 @@
+# Secrets — never commit
 .env
+.env.*
+!.env.example
+credentials/
+*.json
+!config/*.yaml
+*.pem
+*.p12
+
 .venv/
 venv/
 __pycache__/
@@ -8,8 +17,9 @@ __pycache__/
 .mypy_cache/
 output/candidates.json
 output/candidates.csv
+output/submitted.json
 output/history/
-credentials/
-*.json
-!config/*.yaml
 __MACOSX/
+.DS_Store
+.DS_Store
+output/automation.log

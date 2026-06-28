@@ -19,7 +19,12 @@ def scan_channels(client: YouTubeClient, config: AppConfig) -> dict[str, str]:
         if not uploads_playlist:
             continue
 
-        video_ids = client.list_playlist_videos(uploads_playlist, published_after)
+        try:
+            video_ids = client.list_playlist_videos(uploads_playlist, published_after)
+        except Exception as error:
+            print(f"  Warning: skipped {channel_name} ({error})")
+            continue
+
         for video_id in video_ids:
             discovered[video_id] = channel_name
 

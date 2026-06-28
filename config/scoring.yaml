@@ -33,3 +33,20 @@ weights:
   views_per_hour: 1.0
   engagement_rate: 10.0
   like_ratio: 5.0
+
+# Prefer major news sources over re-upload / opinion channels
+trusted_channels:
+  - Fox News
+  - CNN
+  - NBC News
+  - CBS News
+  - ABC News
+  - BBC News
+  - CBC News
+  - The Sun
+  - The Economic Times
+  - Times Of India
+  - The White House
+  - Al Jazeera English
+
+channel_boost: 1.5

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.fillviz.news-automation</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/mehulwadhavekar/Desktop/Cursor Projects/News channel Automationa/scripts/run_pipeline.sh</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>21600</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/mehulwadhavekar/Desktop/Cursor Projects/News channel Automationa/output/automation.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/mehulwadhavekar/Desktop/Cursor Projects/News channel Automationa/output/automation.log</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/mehulwadhavekar/Desktop/Cursor Projects/News channel Automationa</string>
+</dict>
+</plist>

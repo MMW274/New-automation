@@ -122,13 +122,32 @@ vizard-api-skills/  # Vizard API docs (Phase 2)
 scripts/         # Cron-friendly runner
 ```
 
-## Phase 2 (next)
+## Phase 2 — Full pipeline (Vizard auto-submit + schedule)
 
-- Auto-submit top URL to Vizard API
-- Poll until clips are ready
-- Notify you via Telegram/email
+Matches your manual Vizard workflow: 9:16, AI clips, viral score ≥ 9, 8/day, 4am–7pm Berlin, TikTok + Fill Viz.
 
-See `vizard-api-skills/SKILL.md` for Vizard API workflow.
+### Setup
+
+1. Add `VIZARDAI_API_KEY` to `.env` (Vizard workspace → API)
+2. Verify social accounts: `python -m src.vizard.list_accounts`
+3. Optional: set `template_id` in `config/vizard.yaml` for your Bouncy template
+
+### Run
+
+```bash
+# Full pipeline: discover → submit to Vizard → schedule clips
+python -m src.scheduler.run_pipeline
+
+# Preview without publishing
+python -m src.scheduler.run_pipeline --dry-run
+
+# Or use script
+./scripts/run_pipeline.sh
+```
+
+Settings live in `config/vizard.yaml`. See `docs/phase2-workflow.md` for UI → API mapping.
+
+**Credits:** ~5 Vizard credits per source video (same as manual upload).
 
 ## Repo
 
@@ -136,3 +155,22 @@ See `vizard-api-skills/SKILL.md` for Vizard API workflow.
 git remote add origin git@github.com:MMW274/New-automation.git
 git push -u origin main
 ```
+
+## Security (API keys)
+
+Your real keys live **only** in `.env` on your Mac. That file is:
+
+- Listed in `.gitignore` — never pushed to [GitHub](https://github.com/MMW274/New-automation.git)
+- Listed in `.cursorignore` — kept out of Cursor AI indexing where possible
+- Blocked by a pre-commit hook if you try to commit it by mistake
+
+Enable the hook once:
+
+```bash
+./scripts/enable-git-hooks.sh
+```
+
+**Do not paste API keys into chat** — chat history is not the same as `.env`. If a key was shared in chat, rotate it in Google Cloud Console.
+
+Only `.env.example` (placeholders, no real keys) is tracked in git.
+

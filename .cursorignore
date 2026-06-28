@@ -1,0 +1,12 @@
+# Secrets — never index or send to AI context
+.env
+.env.*
+!.env.example
+
+# Google / Vizard credentials
+credentials/
+*.pem
+*.p12
+
+# Local virtualenv
+.venv/

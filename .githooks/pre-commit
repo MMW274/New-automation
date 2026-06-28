@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# Blocks accidental commits of secret files.
+set -euo pipefail
+
+BLOCKED_PATTERNS=(
+  '^\.env$'
+  '^\.env\.'
+  '^credentials/'
+)
+
+while IFS= read -r file; do
+  for pattern in "${BLOCKED_PATTERNS[@]}"; do
+    if [[ "$file" =~ $pattern ]] && [[ "$file" != ".env.example" ]]; then
+      echo "ERROR: Refusing to commit secret file: $file"
+      echo "       Secrets belong in .env (local only, gitignored)."
+      exit 1
+    fi
+  done
+
+  if [[ "$file" == *.json ]] && [[ "$file" == credentials/* ]]; then
+    echo "ERROR: Refusing to commit credentials JSON: $file"
+    exit 1
+  fi
+
+  if rg -q 'AIzaSy[0-9A-Za-z_-]{20,}' "$file" 2>/dev/null; then
+    echo "ERROR: Possible Google API key detected in staged file: $file"
+    exit 1
+  fi
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+exit 0

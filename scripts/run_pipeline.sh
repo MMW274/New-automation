@@ -2,4 +2,4 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
-exec "$ROOT/.venv/bin/python" -m src.scheduler.run "$@"
+exec "$ROOT/.venv/bin/python" -m src.scheduler.run_pipeline "$@"
