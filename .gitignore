@@ -22,4 +22,5 @@ output/daily_counts.json
 output/history/
 __MACOSX/
 .DS_Store
+*.zip
 output/automation.log

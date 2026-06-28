@@ -1,19 +1,23 @@
 # Phase 3 — Hands-off automation
 
-## What runs automatically
+> **Current default is cloud (GitHub Actions, 3× daily UTC).** See [`cloud-automation.md`](cloud-automation.md). The local-launchd flow below is kept for offline / backup use only.
 
-Every **6 hours** (and once on install):
+## What runs automatically (cloud)
 
-1. Scan YouTube for hot Trump/US news (your 11 channels + keywords)
-2. Pick top video not submitted in last 48h
-3. Submit to Vizard → generate clips
-4. **Publish immediately** every clip with viral score **≥ 8.5** to:
-   - YouTube **Fill Viz**
+3× daily discovery at 11/17/22 UTC:
+
+1. Scan 11 trusted news channels (keyword search disabled to conserve quota)
+2. Pick up to 3 fresh source videos (48h dedupe, max 1 per channel)
+3. Submit each to Vizard → generate clips
+4. Filter clips with viral score **≥ 8.5**
+5. **Smart-slot publish** — each clip is scheduled into the next platform-optimal US ET window (see `src/scheduler/optimal_slots.py`):
+   - YouTube Shorts **Fill Viz**
    - TikTok **today_news98**
+   - X **Fill Viz**
 
-No calendar scheduling — posts go live as soon as Vizard finishes.
+On failure, a GitHub issue is auto-opened with the run URL and a triage checklist.
 
-## Install (one time)
+## Local fallback install (one time, optional)
 
 ```bash
 cd "/Users/mehulwadhavekar/Desktop/Cursor Projects/News channel Automationa"

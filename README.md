@@ -11,7 +11,13 @@ Fully automated Trump / US news clip pipeline: discover on YouTube → clip with
 | YouTube discovery | Live — 11 channels |
 | Vizard clipping | Live — score ≥ 8.5 |
 | Multi-platform publish | TikTok + YouTube + X |
-| Cloud automation | GitHub Actions, 4× daily |
+| Cloud automation | GitHub Actions, 3× daily (11/17/22 UTC) |
+| Smart publish timing | Day-of-week × platform US ET peaks (`src/scheduler/optimal_slots.py`) |
+| Per-platform AI captions | Vizard `/project/ai-social` per target (TikTok/YT/X) |
+| Discovery quota | RSS-first (`src/discovery/rss_scanner.py`) — ~0 YouTube quota |
+| Source dedupe | **Permanent** — a source video can never be republished |
+| Failure alerts | Auto-opens GitHub issue on workflow failure |
+| Retry safety | Exponential backoff on Vizard 4003 + HTTP 5xx; skip on 4008; fatal on 4001/4007 |
 | Facebook | Not connected (optional later) |
 
 ## Cloud automation (no laptop needed)

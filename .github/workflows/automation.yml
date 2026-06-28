@@ -1,9 +1,14 @@
 name: News Automation Pipeline
 
 on:
+  # 3 daily discovery passes; per-clip publish times are then chosen by
+  # src/scheduler/optimal_slots.py to land in US ET prime windows
+  # (TikTok 6-9pm, YT Shorts Fri-Sat 6-9pm, X Tue-Wed 9-11am).
+  # Cron is UTC.
   schedule:
-    # 8am + 8pm Berlin (CEST = UTC+2) — 2 runs/day
-    - cron: "0 6,18 * * *"
+    - cron: "0 11 * * *"   # 07:00 ET — captures morning X window
+    - cron: "0 17 * * *"   # 13:00 ET — midday refresh
+    - cron: "0 22 * * *"   # 18:00 ET — TikTok / YT Shorts prime
   workflow_dispatch:
 
 concurrency:
@@ -14,7 +19,12 @@ jobs:
   run-pipeline:
     runs-on: ubuntu-latest
     timeout-minutes: 90
-    # Secrets are stored under GitHub Environment "YOUTUBE_API_KEY" (not repo secrets)
+    permissions:
+      contents: read
+      issues: write
+    # Secrets are stored under GitHub Environment "YOUTUBE_API_KEY" (legacy
+    # name — holds both YOUTUBE_API_KEY and VIZARDAI_API_KEY). Rename to
+    # `production` when convenient and update this line.
     environment: YOUTUBE_API_KEY
 
     steps:
@@ -30,8 +40,10 @@ jobs:
           path: |
             output/submitted.json
             output/daily_counts.json
-          key: pipeline-state-v2
-          restore-keys: pipeline-state-
+          key: pipeline-state-v3-${{ github.run_id }}
+          restore-keys: |
+            pipeline-state-v3-
+            pipeline-state-v2-
 
       - name: Install dependencies
         run: pip install -r requirements.txt
@@ -52,3 +64,32 @@ jobs:
             output/daily_counts.json
             output/candidates.json
           retention-days: 30
+
+      - name: Open failure issue
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = `Pipeline failure: run #${context.runNumber} (${new Date().toISOString().slice(0,16)}Z)`;
+            const runUrl = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = [
+              `Automation run **failed**.`,
+              ``,
+              `- Run: ${runUrl}`,
+              `- Trigger: \`${context.eventName}\``,
+              `- SHA: \`${context.sha.slice(0,7)}\``,
+              ``,
+              `Open the run log + artifacts to inspect \`output/*.json\`.`,
+              ``,
+              `Triage:`,
+              `1. Check YouTube quota (\`HttpError 403\` → quota exceeded — wait or rotate key).`,
+              `2. Check Vizard code: \`4003\` rate limit, \`4007\` insufficient credits, \`4008\` source download failed.`,
+              `3. Confirm Environment \`YOUTUBE_API_KEY\` still holds both secrets.`,
+            ].join("\n");
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ["pipeline-failure", "automation"],
+            });

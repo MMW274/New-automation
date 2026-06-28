@@ -13,13 +13,27 @@ highlight_switch: 1
 remove_silence_switch: 1
 auto_broll_switch: 1
 
+# Bouncy template (matches the manual UI styling). To find the ID:
+#   Vizard workspace → Templates → open template → copy the numeric ID from URL.
+# Leave as null to use Vizard's default template.
 template_id: null
 max_clip_number: 20
 
 # --- Publishing ---
 min_viral_score: 8.5
 
-# Stagger each clip by N minutes (avoids burst-posting spam flags)
+# Smart slotting: place each clip at the next platform-optimal US ET window
+# (see src/scheduler/optimal_slots.py). Set false to fall back to legacy
+# now+stagger spacing.
+smart_publish_slots: true
+
+# Per-platform AI captions: when true, requests a native caption from
+# Vizard /project/ai-social for each target platform (TikTok/YT/X). Falls
+# back silently to Vizard's default auto-caption on error.
+per_platform_captions: true
+
+# Legacy stagger — only used when smart_publish_slots: false, or as a
+# fallback when many clips contend for the same peak slot.
 publish_stagger_minutes: 45
 publish_gap_seconds: 10
 

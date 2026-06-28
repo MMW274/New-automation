@@ -74,6 +74,8 @@ class VizardConfig:
     max_one_video_per_channel: bool
     publish_all_connected: bool
     platform_daily_limits: dict[str, int]
+    smart_publish_slots: bool
+    per_platform_captions: bool
 
 
 def _load_yaml(path: Path) -> dict:
@@ -176,4 +178,6 @@ def load_vizard_config() -> VizardConfig:
         max_one_video_per_channel=bool(raw.get("max_one_video_per_channel", True)),
         publish_all_connected=bool(raw.get("publish_all_connected", True)),
         platform_daily_limits=dict(raw.get("platform_daily_limits", {})),
+        smart_publish_slots=bool(raw.get("smart_publish_slots", True)),
+        per_platform_captions=bool(raw.get("per_platform_captions", True)),
     )

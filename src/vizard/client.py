@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any
 
@@ -9,12 +10,37 @@ from src.config import VizardConfig
 
 BASE_URL = "https://elb-api.vizard.ai/hvizard-server-front/open-api/v1"
 
+LOG = logging.getLogger(__name__)
+
+# Vizard response codes (from vizard-api-skills/SKILL.md)
+CODE_OK = 2000
+CODE_PROCESSING = 1000
+CODE_INVALID_KEY = 4001
+CODE_RATE_LIMIT = 4003
+CODE_NO_CREDITS = 4007
+CODE_DOWNLOAD_FAILED = 4008
+
+RETRY_CODES = {CODE_RATE_LIMIT}
+FATAL_CODES = {CODE_INVALID_KEY, CODE_NO_CREDITS}
+SKIP_CODES = {CODE_DOWNLOAD_FAILED}
+
 
 class VizardError(RuntimeError):
-    pass
+    """Generic Vizard API failure."""
+
+
+class VizardSkipSource(VizardError):
+    """Source should be skipped (e.g. 4008 download failed) but pipeline continues."""
+
+
+class VizardFatal(VizardError):
+    """Unrecoverable error (e.g. 4001 invalid key, 4007 out of credits)."""
 
 
 class VizardClient:
+    MAX_RETRIES = 4
+    INITIAL_BACKOFF_SECONDS = 5
+
     def __init__(self, config: VizardConfig) -> None:
         self.config = config
         self._headers = {
@@ -22,25 +48,80 @@ class VizardClient:
             "VIZARDAI_API_KEY": config.api_key,
         }
 
+    def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        url = f"{BASE_URL}{path}"
+        backoff = self.INITIAL_BACKOFF_SECONDS
+        last_data: dict[str, Any] = {}
+
+        for attempt in range(1, self.MAX_RETRIES + 1):
+            try:
+                response = requests.request(
+                    method,
+                    url,
+                    headers=self._headers,
+                    json=payload,
+                    timeout=60,
+                )
+            except requests.RequestException as error:
+                if attempt == self.MAX_RETRIES:
+                    raise VizardError(f"Vizard network error on {path}: {error}") from error
+                LOG.warning("Vizard network error (attempt %d/%d): %s",
+                            attempt, self.MAX_RETRIES, error)
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+
+            # Retry transient HTTP 5xx (server-side hiccups).
+            if 500 <= response.status_code < 600:
+                if attempt == self.MAX_RETRIES:
+                    raise VizardError(f"Vizard {response.status_code} on {path} after retries")
+                LOG.warning("Vizard HTTP %s (attempt %d/%d), backing off %ds",
+                            response.status_code, attempt, self.MAX_RETRIES, backoff)
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+
+            try:
+                data = response.json()
+            except ValueError as error:
+                raise VizardError(
+                    f"Vizard non-JSON response on {path}: {response.text[:200]}"
+                ) from error
+            last_data = data
+            code = data.get("code")
+
+            if code in FATAL_CODES:
+                raise VizardFatal(f"Vizard FATAL on {path}: {data}")
+            if code in SKIP_CODES:
+                raise VizardSkipSource(f"Vizard skip-source on {path}: {data}")
+            if code in RETRY_CODES:
+                if attempt == self.MAX_RETRIES:
+                    raise VizardError(f"Vizard rate limited on {path} after {attempt} attempts")
+                LOG.warning("Vizard rate limited (attempt %d/%d), backing off %ds",
+                            attempt, self.MAX_RETRIES, backoff)
+                time.sleep(backoff)
+                backoff *= 2
+                continue
+            return data
+
+        raise VizardError(f"Vizard exhausted retries on {path}: {last_data}")
+
     def _post(self, path: str, payload: dict[str, Any]) -> dict[str, Any]:
-        response = requests.post(
-            f"{BASE_URL}{path}",
-            headers=self._headers,
-            json=payload,
-            timeout=60,
-        )
-        data = response.json()
-        if data.get("code") != 2000:
+        data = self._request("POST", path, payload=payload)
+        if data.get("code") != CODE_OK:
             raise VizardError(f"Vizard API error on {path}: {data}")
         return data
 
     def _get(self, path: str) -> dict[str, Any]:
-        response = requests.get(
-            f"{BASE_URL}{path}",
-            headers=self._headers,
-            timeout=60,
-        )
-        return response.json()
+        # Note: returns raw response (caller inspects `code`) — used by
+        # wait_for_clips which polls for 1000 (still processing).
+        return self._request("GET", path)
 
     def create_project(self, video_url: str, project_name: str) -> int:
         payload: dict[str, Any] = {
@@ -85,6 +166,46 @@ class VizardClient:
         data = self._get("/project/social-accounts")
         accounts = data.get("publishAccounts") or data.get("accounts") or []
         return [account for account in accounts if account.get("status") == "active"]
+
+    # Vizard /project/ai-social platform enum (from SKILL.md)
+    AI_SOCIAL_PLATFORM = {
+        "general": 1,
+        "tiktok": 2,
+        "instagram": 3,
+        "youtube": 4,
+        "facebook": 5,
+        "linkedin": 6,
+        "twitter": 7,
+        "x": 7,
+    }
+    AI_SOCIAL_TONE_CATCHY = 2
+
+    def ai_caption(
+        self,
+        *,
+        final_video_id: int,
+        platform: str,
+        tone: int = AI_SOCIAL_TONE_CATCHY,
+    ) -> str:
+        """Generate a platform-native caption + hashtags via Vizard AI.
+
+        Returns empty string on any non-fatal error so the caller can fall
+        back to Vizard's default auto-caption (`post=""`).
+        """
+        platform_id = self.AI_SOCIAL_PLATFORM.get(platform.lower())
+        if not platform_id:
+            return ""
+        payload = {
+            "finalVideoId": final_video_id,
+            "aiSocialPlatform": platform_id,
+            "tone": tone,
+            "voice": 0,
+        }
+        try:
+            data = self._post("/project/ai-social", payload)
+        except (VizardError, VizardSkipSource):
+            return ""
+        return str(data.get("aiSocialContent") or "")
 
     def publish_clip(
         self,

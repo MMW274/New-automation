@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import replace
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
@@ -11,6 +12,7 @@ if str(ROOT_DIR) not in sys.path:
 from src.config import load_config, load_vizard_config
 from src.discovery.channel_scanner import scan_channels
 from src.discovery.keyword_search import search_by_keywords
+from src.discovery.rss_scanner import scan_channels_rss
 from src.discovery.scorer import score_videos
 from src.discovery.youtube_client import YouTubeClient
 from src.storage.queue import save_candidates
@@ -27,8 +29,17 @@ def run_full_pipeline(*, hours: int | None = None, dry_run: bool = False) -> Non
     client = YouTubeClient(app_config.youtube_api_key)
 
     print(f"Scanning last {app_config.max_age_hours} hours...")
-    channel_sources = scan_channels(client, app_config)
-    print(f"  Channel uploads found: {len(channel_sources)}")
+
+    # RSS first (0 quota); API only for channels whose RSS fetch failed.
+    rss_sources, rss_failed = scan_channels_rss(app_config)
+    print(f"  RSS uploads found: {len(rss_sources)} ({len(rss_failed)} failed channels)")
+    channel_sources: dict[str, str] = dict(rss_sources)
+    if rss_failed:
+        fallback_channels = [c for c in app_config.channels if c["id"] in rss_failed]
+        fallback_config = replace(app_config, channels=fallback_channels)
+        api_sources = scan_channels(client, fallback_config)
+        print(f"  API fallback uploads: {len(api_sources)}")
+        channel_sources.update(api_sources)
 
     if app_config.keyword_search_enabled:
         keyword_sources = search_by_keywords(client, app_config)
