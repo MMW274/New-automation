@@ -29,6 +29,7 @@ jobs:
           import importlib
           for m in [
             'src.config',
+            'src.config_overlay',
             'src.discovery.channel_scanner',
             'src.discovery.rss_scanner',
             'src.discovery.scorer',
