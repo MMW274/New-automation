@@ -20,7 +20,8 @@ template_id: null
 max_clip_number: 20
 
 # --- Publishing ---
-min_viral_score: 8.5
+# Raised from 8.5 → 9.0 (June 2026) so only the very best clips ship.
+min_viral_score: 9.0
 
 # Smart slotting: place each clip at the next platform-optimal US ET window
 # (see src/scheduler/optimal_slots.py). Set false to fall back to legacy
@@ -46,9 +47,11 @@ publish_stagger_minutes: 45
 publish_gap_seconds: 10
 
 # Source selection
-source_videos_per_run: 3
-max_clips_per_run: 4
-max_clips_per_source: 2
+# Tightened June 2026 to fit inside TikTok's ~5/day soft rejection window.
+# 3 runs/day × max 2 clips × 1 per source = 6 clips/day max across platforms.
+source_videos_per_run: 2
+max_clips_per_run: 2
+max_clips_per_source: 1
 max_one_video_per_channel: true
 
 # Publish to ALL active Vizard accounts
@@ -59,14 +62,17 @@ social_accounts:
   tiktok: today_news98
   twitter: Fill Viz
 
-# Enforced daily caps per platform (unique clips per calendar day, UTC)
+# Enforced daily caps per platform (unique clips per calendar day, UTC).
+# TikTok lowered to 2 (was 4) after repeated "daily posting limit reached"
+# rejection emails from Vizard. TikTok's API will reject around the 4–5th
+# post for unverified / new accounts, so 2/day keeps us well under the line.
 platform_daily_limits:
-  youtube: 3
-  tiktok: 4
-  twitter: 10
-  facebook: 5
-  instagram: 5
-  linkedin: 3
+  youtube: 2
+  tiktok: 2
+  twitter: 4
+  facebook: 2
+  instagram: 2
+  linkedin: 2
 
 poll_interval_seconds: 30
 poll_timeout_seconds: 1800

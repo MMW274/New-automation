@@ -19,6 +19,7 @@ class ScoringConfig:
     min_duration_seconds: int
     max_duration_seconds: int
     relevance_terms: list[str]
+    blocked_topics: list[str]
     top_n: int
     weights: dict[str, float]
     trusted_channels: list[str]
@@ -106,6 +107,7 @@ def load_config() -> AppConfig:
         min_duration_seconds=int(scoring_raw.get("min_duration_seconds", 120)),
         max_duration_seconds=int(scoring_raw.get("max_duration_seconds", 7200)),
         relevance_terms=[t.lower() for t in scoring_raw.get("relevance_terms", [])],
+        blocked_topics=[t.lower() for t in scoring_raw.get("blocked_topics", [])],
         top_n=int(scoring_raw.get("top_n", 15)),
         weights=scoring_raw.get("weights", {}),
         trusted_channels=scoring_raw.get("trusted_channels", []),

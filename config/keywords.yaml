@@ -9,7 +9,8 @@ queries:
   - "Trump press conference"
 
 # YouTube trending feed (mostPopular videos in News & Politics category).
-# Costs 1 quota unit per run; catches breaking stories outside the 11
-# configured channels (e.g. Reuters, AP, Politico if they trend).
-trending_news_enabled: true
+# DISABLED June 2026 — it kept pulling sports (WNBA), weather (floods),
+# and celebrity stories into the pipeline. Stick to the curated USA-politics
+# channels in config/channels.yaml.
+trending_news_enabled: false
 trending_region: US

@@ -8,22 +8,90 @@ min_views: 5000
 min_duration_seconds: 120
 max_duration_seconds: 7200
 
-# Only include videos whose title or description match at least one term
+# Strict relevance — a video must mention at least one of these in title or
+# description. Trimmed June 2026 to USA-politics-only terms. Generic words like
+# "us news", "america", "government" were removed because they matched
+# WNBA / weather / flood stories.
 relevance_terms:
   - trump
   - white house
   - congress
   - senate
+  - house republicans
+  - house democrats
+  - capitol hill
   - executive order
-  - administration
-  - republican
-  - democrat
-  - government
-  - capitol
-  - president
-  - federal
-  - us news
-  - america
+  - oval office
+  - maga
+  - gop
+  - vance
+  - jd vance
+  - biden
+  - kamala
+  - harris
+  - rubio
+  - desantis
+  - washington dc
+  - state of the union
+  - impeachment
+  - supreme court
+  - scotus
+  - doj
+  - fbi
+  - pentagon
+  - ice raid
+  - border crisis
+  - tariff
+  - air force one
+  - press secretary
+  - karoline leavitt
+
+# HARD BLOCK — any video whose title or description matches one of these
+# topic terms is dropped before scoring. Tuned for attention-grabbing
+# Trump / USA-politics-only content; sports, weather, celebrity, and
+# global-disaster stories are out.
+blocked_topics:
+  # Sports
+  - wnba
+  - nba
+  - nfl
+  - mlb
+  - nhl
+  - "premier league"
+  - caitlin clark
+  - lebron
+  - super bowl
+  - march madness
+  - olympics
+  - "world cup"
+  - taylor swift
+  - kanye
+  # Weather / natural disasters (not politics)
+  - flood
+  - flooding
+  - hurricane
+  - tornado
+  - wildfire
+  - earthquake
+  - tsunami
+  - heatwave
+  - blizzard
+  # Celebrity / entertainment
+  - kardashian
+  - met gala
+  - oscars
+  - grammys
+  - tony awards
+  - billboard awards
+  - red carpet
+  # Foreign-only politics (we want US angle only)
+  - "india news"
+  - "uk news"
+  - brexit
+  - sunak
+  - starmer
+  - modi
+  - "world news tonight"
 
 # How many top candidates to keep in the output queue
 top_n: 15
@@ -34,19 +102,12 @@ weights:
   engagement_rate: 10.0
   like_ratio: 5.0
 
-# Prefer major news sources over re-upload / opinion channels
+# Prefer the major USA news sources. Foreign / world-news outlets removed.
 trusted_channels:
   - Fox News
   - CNN
   - NBC News
   - CBS News
-  - ABC News
-  - BBC News
-  - CBC News
-  - The Sun
-  - The Economic Times
-  - Times Of India
   - The White House
-  - Al Jazeera English
 
 channel_boost: 1.5
