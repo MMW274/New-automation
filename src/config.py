@@ -7,6 +7,8 @@ from pathlib import Path
 import yaml
 from dotenv import load_dotenv
 
+from src.config_overlay import apply_overlay
+
 ROOT_DIR = Path(__file__).resolve().parents[1]
 CONFIG_DIR = ROOT_DIR / "config"
 OUTPUT_DIR = ROOT_DIR / "output"
@@ -24,6 +26,10 @@ class ScoringConfig:
     weights: dict[str, float]
     trusted_channels: list[str]
     channel_boost: float
+    # Engagement-quality floors. 0 = disabled. Overridden by overlays in
+    # extensions/<name>/scoring.overlay.yaml — do not set in base config.
+    min_views_per_hour: float = 0.0
+    min_engagement_rate: float = 0.0
 
 
 @dataclass
@@ -101,6 +107,11 @@ def load_config() -> AppConfig:
     channels_raw = _load_yaml(CONFIG_DIR / "channels.yaml")
     keywords_raw = _load_yaml(CONFIG_DIR / "keywords.yaml")
 
+    # Layer any active overlays from extensions/ on top of the base configs.
+    # If no overlays are declared in extensions/active.yaml this is a no-op.
+    scoring_raw = apply_overlay(scoring_raw, ROOT_DIR, "scoring.overlay.yaml")
+    keywords_raw = apply_overlay(keywords_raw, ROOT_DIR, "keywords.overlay.yaml")
+
     scoring = ScoringConfig(
         max_age_hours=int(scoring_raw.get("max_age_hours", 24)),
         min_views=int(scoring_raw.get("min_views", 5000)),
@@ -112,6 +123,8 @@ def load_config() -> AppConfig:
         weights=scoring_raw.get("weights", {}),
         trusted_channels=scoring_raw.get("trusted_channels", []),
         channel_boost=float(scoring_raw.get("channel_boost", 1.0)),
+        min_views_per_hour=float(scoring_raw.get("min_views_per_hour", 0)),
+        min_engagement_rate=float(scoring_raw.get("min_engagement_rate", 0)),
     )
 
     service_account = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "").strip()
@@ -151,6 +164,8 @@ def load_vizard_config() -> VizardConfig:
         )
 
     raw = _load_yaml(CONFIG_DIR / "vizard.yaml")
+    # Layer any active overlays from extensions/ on top of the base config.
+    raw = apply_overlay(raw, ROOT_DIR, "vizard.overlay.yaml")
     template_id = raw.get("template_id")
     return VizardConfig(
         api_key=api_key,

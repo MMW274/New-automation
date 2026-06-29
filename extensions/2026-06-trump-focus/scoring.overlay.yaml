@@ -1,0 +1,89 @@
+# Overlay applied on top of config/scoring.yaml at runtime.
+# See ../README.md for merge rules and ./README.md for rationale.
+
+# --- Hard quality floor ---
+# Only consider source videos that are already going viral. A 400k-view
+# YouTube upload in 24h is a top-tier news item for the channels we watch.
+min_views: 400000
+
+# Must be currently hot — 5,000 views/hour means roughly a 120K/day pace.
+# Anything cooling off (old viral hit losing steam) gets dropped.
+min_views_per_hour: 5000
+
+# At least 0.5% of viewers must engage (like + 3*comment / views).
+# Stops passive-view / autoplay-padded numbers from sneaking in.
+min_engagement_rate: 0.005
+
+# --- Topic focus additions ---
+# These EXTEND the base relevance_terms list (deduped). Keep using
+# `_add` for additive changes so we never accidentally drop a base term.
+relevance_terms_add:
+  # Trump administration faces
+  - epstein
+  - jeffrey epstein
+  - epstein files
+  - epstein list
+  - ghislaine maxwell
+  - kash patel
+  - patel fbi
+  - fbi director
+  - pete hegseth
+  - hegseth
+  - stephen miller
+  - susie wiles
+  - speaker johnson
+  - mike johnson
+  - tulsi gabbard
+  - rfk jr
+  - robert f kennedy
+  - rfk junior
+  - ratcliffe
+  - john ratcliffe
+  - karoline leavitt
+  - press secretary
+  - chief of staff
+  # DOGE / efficiency drive
+  - doge
+  - department of government efficiency
+  - elon musk doge
+  - musk trump
+  # Trump-led global politics
+  - trump putin
+  - trump xi
+  - trump zelensky
+  - trump netanyahu
+  - trump erdogan
+  - trump nato
+  - trump tariff
+  - trump tariffs
+  - trump pardon
+  - trump indictment
+  - trump rally
+  - trump endorsement
+  - trump truth social
+  - trump executive order
+  - mar-a-lago
+  - mar a lago
+  # Major US movements / flashpoints
+  - second amendment
+  - january 6
+  - jan 6 hearings
+  - capitol riot
+  - hunter biden
+  - biden pardon
+  - special counsel
+  - durham report
+  - mueller
+  - russiagate
+  - voter fraud
+  - election integrity
+
+# Extra blocks for things that snuck through earlier runs. Anything
+# matched here is dropped pre-scoring, even if "trump" is also present.
+blocked_topics_add:
+  - "world news tonight"
+  - "abc world news"
+  - "nightly news intro"
+  - "live stream"
+  - "watch live"
+  - "weather forecast"

@@ -1,3 +1,9 @@
+# ARCHIVED on 2026-06-29.
+# Original path: src/vizard/scheduler.py
+# Replaced by: src/scheduler/optimal_slots.py (US-ET peak-window slotting)
+#              + src/vizard/pipeline.py (`_slot_for_target`).
+# No code in the live pipeline imports this file anymore.
+
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta

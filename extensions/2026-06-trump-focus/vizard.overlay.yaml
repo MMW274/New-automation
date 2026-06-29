@@ -1,0 +1,9 @@
+# Vizard overlay — empty on purpose for this iteration.
+#
+# The base config/vizard.yaml caps (TikTok 2/day, max_clips_per_run 2,
+# min_viral_score 9.0, smart_publish_slots true, per_platform_captions
+# true, safety_filter_enabled true) are already correct.
+#
+# Add knobs here when you want to A/B-test publish cadence, daily caps,
+# viral score floor, or template_id — without editing the base file.
+{}

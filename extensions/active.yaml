@@ -1,0 +1,12 @@
+# Ordered list of overlay folders inside extensions/ that are currently
+# applied on top of config/scoring.yaml and config/vizard.yaml.
+#
+# Order matters: later entries win on scalar conflicts (e.g. min_views).
+# Lists tagged with _add / _remove always merge additively, regardless
+# of order.
+#
+# To roll back an adjustment, comment its line out — DO NOT delete the
+# folder. The folder is the audit trail.
+
+active:
+  - 2026-06-trump-focus

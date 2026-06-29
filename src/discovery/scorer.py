@@ -104,6 +104,14 @@ def score_videos(
         engagement_rate = (like_count + comment_count * 3) / max(view_count, 1)
         like_ratio = like_count / max(view_count, 1)
 
+        # Engagement-quality floors. Both default to 0 in core config; real
+        # values come from extensions/<name>/scoring.overlay.yaml so we can
+        # tune without editing the base.
+        if scoring.min_views_per_hour and views_per_hour < scoring.min_views_per_hour:
+            continue
+        if scoring.min_engagement_rate and engagement_rate < scoring.min_engagement_rate:
+            continue
+
         score = (
             views_per_hour * float(weights.get("views_per_hour", 1.0))
             + engagement_rate * float(weights.get("engagement_rate", 10.0)) * 1000
