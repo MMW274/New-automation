@@ -80,6 +80,31 @@ class YouTubeClient:
             if item["id"].get("videoId")
         ]
 
+    def trending_news_video_ids(
+        self,
+        *,
+        region_code: str = "US",
+        max_results: int = 50,
+        category_id: str = "25",  # 25 = News & Politics
+    ) -> list[str]:
+        """Top trending News & Politics videos in `region_code` (1 quota unit).
+
+        Catches breaking stories that aren't on any of our static channels.
+        Returns just IDs — caller enriches with `get_video_details`.
+        """
+        response = (
+            self._service.videos()
+            .list(
+                part="id",
+                chart="mostPopular",
+                regionCode=region_code,
+                videoCategoryId=category_id,
+                maxResults=min(max_results, 50),
+            )
+            .execute()
+        )
+        return [item["id"] for item in response.get("items", []) if item.get("id")]
+
     def get_video_details(self, video_ids: list[str]) -> list[dict[str, Any]]:
         if not video_ids:
             return []

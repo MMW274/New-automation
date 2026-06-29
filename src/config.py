@@ -19,6 +19,7 @@ class ScoringConfig:
     min_duration_seconds: int
     max_duration_seconds: int
     relevance_terms: list[str]
+    blocked_topics: list[str]
     top_n: int
     weights: dict[str, float]
     trusted_channels: list[str]
@@ -37,6 +38,8 @@ class AppConfig:
     sheets_id: str
     service_account_json: Path | None
     output_channel_id: str
+    trending_news_enabled: bool
+    trending_region: str
 
 
 @dataclass
@@ -74,6 +77,10 @@ class VizardConfig:
     max_one_video_per_channel: bool
     publish_all_connected: bool
     platform_daily_limits: dict[str, int]
+    smart_publish_slots: bool
+    per_platform_captions: bool
+    safety_filter_enabled: bool
+    blocked_terms: list[str]
 
 
 def _load_yaml(path: Path) -> dict:
@@ -100,6 +107,7 @@ def load_config() -> AppConfig:
         min_duration_seconds=int(scoring_raw.get("min_duration_seconds", 120)),
         max_duration_seconds=int(scoring_raw.get("max_duration_seconds", 7200)),
         relevance_terms=[t.lower() for t in scoring_raw.get("relevance_terms", [])],
+        blocked_topics=[t.lower() for t in scoring_raw.get("blocked_topics", [])],
         top_n=int(scoring_raw.get("top_n", 15)),
         weights=scoring_raw.get("weights", {}),
         trusted_channels=scoring_raw.get("trusted_channels", []),
@@ -129,6 +137,8 @@ def load_config() -> AppConfig:
         output_channel_id=os.getenv(
             "OUTPUT_YOUTUBE_CHANNEL_ID", "UClUZaCTA-gBR2iB8LKAAhNw"
         ),
+        trending_news_enabled=bool(keywords_raw.get("trending_news_enabled", True)),
+        trending_region=str(keywords_raw.get("trending_region", "US")),
     )
 
 
@@ -176,4 +186,8 @@ def load_vizard_config() -> VizardConfig:
         max_one_video_per_channel=bool(raw.get("max_one_video_per_channel", True)),
         publish_all_connected=bool(raw.get("publish_all_connected", True)),
         platform_daily_limits=dict(raw.get("platform_daily_limits", {})),
+        smart_publish_slots=bool(raw.get("smart_publish_slots", True)),
+        per_platform_captions=bool(raw.get("per_platform_captions", True)),
+        safety_filter_enabled=bool(raw.get("safety_filter_enabled", True)),
+        blocked_terms=list(raw.get("blocked_terms", []) or []),
     )

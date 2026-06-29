@@ -34,6 +34,22 @@ def _matches_relevance(text: str, terms: list[str]) -> bool:
     return any(term in lowered for term in terms)
 
 
+def _matches_blocked_topic(text: str, blocked: list[str]) -> str | None:
+    """Return the first blocked topic phrase that appears in `text`, else None.
+
+    Used as a HARD filter — any hit drops the video before it can be scored,
+    even if it would otherwise pass the relevance gate. Keeps sports / weather
+    / celebrity / world-only-news out of the candidate pool.
+    """
+    if not blocked:
+        return None
+    lowered = text.lower()
+    for term in blocked:
+        if term and term in lowered:
+            return term
+    return None
+
+
 def score_videos(
     videos: list[dict[str, Any]],
     sources: dict[str, str],
@@ -80,6 +96,8 @@ def score_videos(
         if scoring.relevance_terms and not _matches_relevance(
             relevance_text, scoring.relevance_terms
         ):
+            continue
+        if _matches_blocked_topic(relevance_text, scoring.blocked_topics):
             continue
 
         views_per_hour = view_count / hours_since_publish

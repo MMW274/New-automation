@@ -10,12 +10,14 @@
 ## Pipeline overview
 
 ```
-YouTube Discovery (11 channels + keywords)
-    → Score by views/hour + engagement
-    → Pick up to 3 fresh source videos (48h dedupe)
-    → Vizard AI clipping (score ≥ 8.5)
-    → Publish immediately to ALL connected Vizard accounts
-    → GitHub Actions (cloud, 4× daily — no laptop required)
+YouTube Discovery (11 channels, keyword search disabled to save quota)
+    → Score by views/hour + engagement (trusted-channel boost ×1.5)
+    → Pick up to 3 fresh source videos (48h dedupe, max 1 per channel)
+    → Vizard AI clipping (viral score ≥ 8.5)
+    → Smart slot publish: each clip scheduled into the next platform-optimal
+      US ET window per day of week (src/scheduler/optimal_slots.py)
+    → GitHub Actions cloud, 3× daily discovery (11/17/22 UTC)
+    → Workflow failure auto-opens a GitHub issue
 ```
 
 ---
@@ -26,8 +28,10 @@ YouTube Discovery (11 channels + keywords)
 |-------|--------|-------------|
 | 1 | Done | YouTube discovery, virality scoring, JSON/CSV export |
 | 2 | Done | Vizard API submit, clip filter, multi-platform publish |
-| 3 | Done | Cloud automation via GitHub Actions |
-| 4 | Planned | Notifications, quota optimization, platform rate limits |
+| 3 | Done | Cloud automation via GitHub Actions (3× daily) |
+| 4 | Done | Smart slot publishing + failure-issue notifications |
+| 5 | Done | RSS-first discovery (~0 quota); per-platform AI captions; Vizard retry/backoff; **permanent source + clip dedupe** |
+| 6 | Done | Dedupe ledger split, monthly state pruner, weekly analytics snapshot, YT News-trending feed, content safety gate, pytest CI, Dependabot |
 
 ---
 
@@ -80,11 +84,12 @@ Fox News, The Economic Times, CBC News, CNN, BBC News, Times Of India, CBS News,
 
 | File | Key settings |
 |------|----------------|
-| `config/vizard.yaml` | 3 sources/run, 10 clips max, score ≥ 8.5, immediate publish, all platforms |
+| `config/vizard.yaml` | 3 sources/run, 4 clips max/run, 2/source, score ≥ 8.5, `smart_publish_slots: true`, all platforms |
 | `config/scoring.yaml` | 24h window, trusted channel boost 1.5× |
 | `config/channels.yaml` | 11 subscribed news channels |
-| `config/keywords.yaml` | 4 keyword queries (100 units each) |
-| `.github/workflows/automation.yml` | Cron 4× daily Berlin, env `YOUTUBE_API_KEY` |
+| `config/keywords.yaml` | `keyword_search_enabled: false` (cloud quota guard) |
+| `.github/workflows/automation.yml` | Cron 3× daily UTC (11/17/22), env `YOUTUBE_API_KEY`, auto-issue on failure |
+| `src/scheduler/optimal_slots.py` | Day-of-week × platform US ET peak-window picker |
 
 ---
 
@@ -92,15 +97,17 @@ Fox News, The Economic Times, CBC News, CNN, BBC News, Times Of India, CBS News,
 
 | Secret | Location |
 |--------|----------|
-| `YOUTUBE_API_KEY` | `.env` local + GitHub Environment `YOUTUBE_API_KEY` |
-| `VIZARDAI_API_KEY` | `.env` local + GitHub Environment `YOUTUBE_API_KEY` |
+| `YOUTUBE_API_KEY` | `.env` local + GitHub Environment `YOUTUBE_API_KEY` (legacy env name — both secrets live here) |
+| `VIZARDAI_API_KEY` | `.env` local + GitHub Environment `YOUTUBE_API_KEY` (same env) |
+
+> The Environment is named `YOUTUBE_API_KEY` for historical reasons; rename it to `production` and update `.github/workflows/automation.yml > environment:` when convenient.
 
 ---
 
 ## Credit usage estimate
 
 ~5 Vizard credits per source video × 3 sources = **~15 credits per cloud run**  
-× 4 runs/day = **~60 credits/day**
+× 3 runs/day = **~45 credits/day** (platform daily caps throttle the actual unique-clip total to ≤17/day)
 
 ---
 

@@ -1,24 +1,15 @@
-# Channels you subscribe to + The White House (Trump/US gov source)
+# USA-politics-focused channels only.
+# Removed (June 2026): BBC News, CBC News, ABC News, The Sun, Times Of India,
+# The Economic Times — these mostly publish world/general news (WNBA, floods,
+# India/UK politics) and were polluting the candidate pool.
 channels:
   - id: UCXIJgqnII2ZOINSWNOGFThA
     name: Fox News
-  - id: UCJFOER35ggIWwsXh2ZDnqyg
-    name: The Economic Times
-  - id: UCuFFtHWoLl5fauMMD5Ww2jA
-    name: CBC News
   - id: UCupvZG-5ko_eiXAupbDfxWw
     name: CNN
-  - id: UC16niRr50-MSBwiO3YDb3RA
-    name: BBC News
-  - id: UCckHqySbfy5FcPP6MD_S-Yg
-    name: Times Of India
   - id: UC8p1vwvWtl6T73JiExfWs1g
     name: CBS News
   - id: UCeY0bbntWzzVIaj2z3QigXg
     name: NBC News
-  - id: UCIzXayRP7-P0ANpq-nD-h5g
-    name: The Sun
-  - id: UCBi2mrWuNuyYy4gbM6fU18Q
-    name: ABC News
   - id: UCYxRlFDqcWM4y7FfpiAN3KQ
     name: The White House

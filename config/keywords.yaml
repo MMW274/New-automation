@@ -7,3 +7,10 @@ queries:
   - "Trump White House"
   - "US government news"
   - "Trump press conference"
+
+# YouTube trending feed (mostPopular videos in News & Politics category).
+# DISABLED June 2026 — it kept pulling sports (WNBA), weather (floods),
+# and celebrity stories into the pipeline. Stick to the curated USA-politics
+# channels in config/channels.yaml.
+trending_news_enabled: false
+trending_region: US
