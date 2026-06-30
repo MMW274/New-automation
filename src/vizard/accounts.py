@@ -14,11 +14,31 @@ class PublishTarget:
     page: str
 
 
+def _platform_key(platform: str) -> str:
+    key = platform.lower()
+    if key in ("x",):
+        return "twitter"
+    return key
+
+
+def _is_excluded(username: str, page: str, excluded: list[str]) -> bool:
+    if not excluded:
+        return False
+    label = f"{username} {page}".lower()
+    uname = username.lower()
+    for name in excluded:
+        needle = name.lower()
+        if needle in label or needle == uname:
+            return True
+    return False
+
+
 def resolve_publish_targets(
     client: VizardClient, config: VizardConfig
 ) -> list[PublishTarget]:
     accounts = client.list_social_accounts()
     targets: list[PublishTarget] = []
+    excluded = [name.lower() for name in getattr(config, "excluded_accounts", [])]
 
     for account in accounts:
         platform = str(account.get("platform", ""))
@@ -26,6 +46,9 @@ def resolve_publish_targets(
         page = str(account.get("page") or "")
         account_id = str(account["id"])
         label = f"{username} {page}".lower()
+
+        if _is_excluded(username, page, excluded):
+            continue
 
         if config.publish_all_connected:
             targets.append(
@@ -38,7 +61,7 @@ def resolve_publish_targets(
             )
             continue
 
-        hint = config.social_accounts.get(platform.lower(), "").lower()
+        hint = config.social_accounts.get(_platform_key(platform), "").lower()
         if hint and hint in label:
             targets.append(
                 PublishTarget(

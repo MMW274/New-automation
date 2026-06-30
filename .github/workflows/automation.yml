@@ -43,10 +43,9 @@ jobs:
             output/dedupe_ids.json
             output/review_queue.json
             output/history
-          key: pipeline-state-v3-${{ github.run_id }}
+          key: pipeline-state-v4-${{ github.run_id }}
           restore-keys: |
-            pipeline-state-v3-
-            pipeline-state-v2-
+            pipeline-state-v4-
 
       - name: Install dependencies
         timeout-minutes: 5

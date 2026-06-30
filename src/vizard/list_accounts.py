@@ -21,7 +21,7 @@ def main() -> None:
         print("Connect platforms at vizard.ai → Settings → Social accounts")
         return
 
-    print("Active Vizard social accounts (all will receive clips when publish_all_connected: true):\n")
+    print("Active Vizard social accounts (matched by config/vizard.yaml social_accounts when publish_all_connected: false):\n")
     for account in accounts:
         print(f"  platform: {account.get('platform')}")
         print(f"  username: {account.get('username')}")
