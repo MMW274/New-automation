@@ -46,6 +46,7 @@ def _config(**overrides) -> VizardConfig:
         publish_all_connected=False,
         excluded_accounts=["Shamy", "Amy Sheldon"],
         platform_daily_limits={"youtube": 3, "tiktok": 5, "twitter": 4},
+        platform_per_run_limits={"youtube": 2, "tiktok": 1, "twitter": 2},
         smart_publish_slots=False,
         per_platform_captions=True,
         safety_filter_enabled=True,

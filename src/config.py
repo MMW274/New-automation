@@ -84,6 +84,7 @@ class VizardConfig:
     publish_all_connected: bool
     excluded_accounts: list[str]
     platform_daily_limits: dict[str, int]
+    platform_per_run_limits: dict[str, int]
     smart_publish_slots: bool
     per_platform_captions: bool
     safety_filter_enabled: bool
@@ -203,6 +204,7 @@ def load_vizard_config() -> VizardConfig:
         publish_all_connected=bool(raw.get("publish_all_connected", True)),
         excluded_accounts=list(raw.get("excluded_accounts", []) or []),
         platform_daily_limits=dict(raw.get("platform_daily_limits", {})),
+        platform_per_run_limits=dict(raw.get("platform_per_run_limits", {})),
         smart_publish_slots=bool(raw.get("smart_publish_slots", True)),
         per_platform_captions=bool(raw.get("per_platform_captions", True)),
         safety_filter_enabled=bool(raw.get("safety_filter_enabled", True)),

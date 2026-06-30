@@ -13,58 +13,60 @@ highlight_switch: 1
 remove_silence_switch: 1
 auto_broll_switch: 1
 
-# Bouncy template (matches the manual UI styling). To find the ID:
-#   Vizard workspace → Templates → open template → copy the numeric ID from URL.
-# Leave as null to use Vizard's default template.
 template_id: null
 max_clip_number: 20
 
 # --- Publishing ---
 min_viral_score: 8.5
 
-# Post soon after each run (staggered). Smart slots pushed TikTok/YT to
-# midnight and caused Vizard publish failures on the calendar.
+# true = omit publishTime → Vizard posts live (green check right away).
+# false = queue on the Vizard calendar until publishTime (clock icon).
+publish_immediately: true
+
 smart_publish_slots: false
 
 per_platform_captions: true
-
 safety_filter_enabled: true
 blocked_terms: []
 
-publish_stagger_minutes: 20
-publish_gap_seconds: 10
+# Fallback stagger when publish_immediately: false
+publish_stagger_minutes: 90
+publish_gap_seconds: 15
 
-# Volume per run — 3 cloud runs/day can reach 4–5 TikTok + 2–3 YT daily.
-source_videos_per_run: 5
-max_clips_per_run: 5
-max_clips_per_source: 2
+# Volume — spread TikTok across 3 daily cron runs (1/run); YT/X can batch.
+source_videos_per_run: 4
+max_clips_per_run: 3
+max_clips_per_source: 1
 max_one_video_per_channel: true
 
-# ONLY the three news-channel accounts below. Never publish_all_connected.
 publish_all_connected: false
 
-# Allowed targets (username hint must appear in Vizard account label).
 social_accounts:
   youtube: Fill Viz
   tiktok: today_news98
   twitter: Fill Viz
 
-# OFF LIMITS — personal / other channels; never publish news automation here.
 excluded_accounts:
   - Shamy
   - Amy Sheldon
 
+# Daily caps (UTC calendar day). TikTok kept conservative — failures spike above 3.
 platform_daily_limits:
   youtube: 3
-  tiktok: 5
-  twitter: 4
+  tiktok: 3
+  twitter: 3
+
+# Per cloud run — TikTok 1/run avoids rate-limit red ! marks on the calendar.
+platform_per_run_limits:
+  youtube: 2
+  tiktok: 1
+  twitter: 2
 
 poll_interval_seconds: 30
 poll_timeout_seconds: 1800
 dedupe_hours: 48
 
-# Legacy (unused when stagger is active)
-publish_immediately: false
+# Legacy
 auto_schedule: false
 clips_per_day: 8
 post_start_hour: 4

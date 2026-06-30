@@ -99,9 +99,44 @@ def _platform_daily_limit(config: VizardConfig, platform: str) -> int:
     return int(config.platform_daily_limits.get(key, 999))
 
 
+def _platform_key(platform: str) -> str:
+    name = platform.lower()
+    if name in ("twitter", "x"):
+        return "twitter"
+    return name
+
+
+def _per_run_limit(config: VizardConfig, platform: str) -> int:
+    key = _platform_key(platform)
+    limit = config.platform_per_run_limits.get(key)
+    if limit is None:
+        return 999
+    return int(limit)
+
+
 def _stagger_time(stagger_index: int, config: VizardConfig) -> datetime:
     base = datetime.now(timezone.utc) + timedelta(minutes=2)
     return base + timedelta(minutes=stagger_index * config.publish_stagger_minutes)
+
+
+def _publish_time_for_target(
+    target: PublishTarget,
+    *,
+    stagger_index: int,
+    config: VizardConfig,
+    used_slots_by_platform: dict[str, set[datetime]],
+) -> tuple[datetime | None, int | None]:
+    """Return (log_time, publish_time_ms). None ms = Vizard publishes immediately."""
+    if config.publish_immediately:
+        return datetime.now(timezone.utc), None
+
+    publish_at = _slot_for_target(
+        target,
+        stagger_index=stagger_index,
+        config=config,
+        used_slots_by_platform=used_slots_by_platform,
+    )
+    return publish_at, int(publish_at.timestamp() * 1000)
 
 
 def _slot_for_target(
@@ -137,7 +172,7 @@ def _slot_for_target(
 
 
 def _effective_clip_cap(config: VizardConfig, targets: list[PublishTarget]) -> int:
-    """Most restrictive platform slot count caps total unique clips this run."""
+    """Daily remaining slots cap total unique clips this run."""
     caps = [config.max_clips_per_run]
     for target in targets:
         limit = _platform_daily_limit(config, target.platform)
@@ -154,12 +189,15 @@ def run_vizard_pipeline(
     clips_remaining: int | None = None,
     stagger_index: int = 0,
     used_slots_by_platform: dict[str, set[datetime]] | None = None,
+    run_platform_counts: dict[str, int] | None = None,
 ) -> tuple[dict[str, Any], int]:
     client = VizardClient(config)
     cap = clips_remaining if clips_remaining is not None else config.max_clips_per_source
     cap = min(cap, config.max_clips_per_source)
     if used_slots_by_platform is None:
         used_slots_by_platform = {}
+    if run_platform_counts is None:
+        run_platform_counts = {}
 
     print(f"\n--- Vizard: {candidate.title[:70]} ---")
     print(f"Source: {candidate.url} ({candidate.channel_title})")
@@ -237,21 +275,22 @@ def run_vizard_pipeline(
                 t
                 for t in targets
                 if can_publish(t.platform, _platform_daily_limit(config, t.platform))
+                and run_platform_counts.get(_platform_key(t.platform), 0)
+                < _per_run_limit(config, t.platform)
             ]
             if not eligible_targets:
-                print("  Daily platform limits reached — stopping clip publish.")
+                print("  Platform limits reached for this run — stopping clip publish.")
                 break
 
             print(f"  Clip {stagger_index + 1} | score={score} | {title[:60]}")
 
             for target in eligible_targets:
-                publish_at = _slot_for_target(
+                publish_at, publish_ms = _publish_time_for_target(
                     target,
                     stagger_index=stagger_index,
                     config=config,
                     used_slots_by_platform=used_slots_by_platform,
                 )
-                publish_ms = int(publish_at.timestamp() * 1000)
                 caption = ""
                 if getattr(config, "per_platform_captions", True):
                     caption = client.ai_caption(
@@ -266,6 +305,8 @@ def run_vizard_pipeline(
                     post=caption,
                 )
                 record_publish(target.platform)
+                platform_key = _platform_key(target.platform)
+                run_platform_counts[platform_key] = run_platform_counts.get(platform_key, 0) + 1
                 published.append(
                     {
                         "platform": target.platform,
@@ -275,11 +316,17 @@ def run_vizard_pipeline(
                         "title": title,
                         "viral_score": score,
                         "publish_at": publish_at.isoformat(),
+                        "publish_mode": "immediate" if publish_ms is None else "scheduled",
                     }
+                )
+                when = (
+                    "now"
+                    if publish_ms is None
+                    else publish_at.astimezone(timezone.utc).strftime("%a %H:%MZ")
                 )
                 print(
                     f"    → {target.platform} ({target.username or target.page}) "
-                    f"@ {publish_at.astimezone(timezone.utc).strftime('%a %H:%MZ')}"
+                    f"@ {when}"
                 )
 
             clips_published += 1
@@ -320,7 +367,10 @@ def run_multi_video_pipeline(
     print("\n=== Vizard multi-video pipeline ===")
     print(f"Sources per run: {config.source_videos_per_run} (max 1 per channel)")
     print(f"Max clips per run: {config.max_clips_per_run}")
-    print(f"Stagger: {config.publish_stagger_minutes} min between clips")
+    mode = "immediate (omit publishTime)" if config.publish_immediately else "scheduled"
+    print(f"Publish mode: {mode}")
+    if not config.publish_immediately:
+        print(f"Stagger: {config.publish_stagger_minutes} min between clips")
     print(f"Min viral score: {config.min_viral_score}")
 
     if not targets:
@@ -332,7 +382,11 @@ def run_multi_video_pipeline(
     for target in targets:
         limit = _platform_daily_limit(config, target.platform)
         used = limit - platform_slots_remaining(target.platform, limit)
-        print(f"  • {target.platform}: {used}/{limit} used today")
+        per_run = _per_run_limit(config, target.platform)
+        print(
+            f"  • {target.platform}: {used}/{limit} used today "
+            f"(max {per_run} per run)"
+        )
 
     clip_budget = _effective_clip_cap(config, targets)
     print(f"\nClip budget this run: {clip_budget}")
@@ -364,6 +418,7 @@ def run_multi_video_pipeline(
     total_clips = 0
     stagger_index = 0
     used_slots_by_platform: dict[str, set[datetime]] = {}
+    run_platform_counts: dict[str, int] = {}
     results: list[dict[str, Any]] = []
     for pick in picks:
         remaining = clip_budget - total_clips
@@ -377,6 +432,7 @@ def run_multi_video_pipeline(
                 clips_remaining=min(remaining, config.max_clips_per_source),
                 stagger_index=stagger_index,
                 used_slots_by_platform=used_slots_by_platform,
+                run_platform_counts=run_platform_counts,
             )
         except VizardFatal:
             # Invalid key / out of credits — no point continuing this run.
