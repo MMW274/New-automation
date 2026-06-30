@@ -25,7 +25,7 @@ jobs:
           python-version: "3.11"
 
       - name: Restore pipeline state
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             output/submitted.json
@@ -45,7 +45,7 @@ jobs:
         run: python -m src.storage.pruner
 
       - name: Save pruned state to cache (next run will pick it up)
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: |
             output/submitted.json
