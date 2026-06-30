@@ -2,17 +2,17 @@
 # See ../README.md for merge rules and ./README.md for rationale.
 
 # --- Hard quality floor ---
-# Only consider source videos that are already going viral. A 400k-view
-# YouTube upload in 24h is a top-tier news item for the channels we watch.
-min_views: 400000
+# High-traction news only, but loose enough to find daily candidates.
+min_views: 100000
 
-# Must be currently hot — 5,000 views/hour means roughly a 120K/day pace.
-# Anything cooling off (old viral hit losing steam) gets dropped.
-min_views_per_hour: 5000
+# ~2,400 views/hour ≈ 58K/day pace — still clearly trending.
+min_views_per_hour: 2500
 
-# At least 0.5% of viewers must engage (like + 3*comment / views).
-# Stops passive-view / autoplay-padded numbers from sneaking in.
-min_engagement_rate: 0.005
+# At least 0.4% engagement (like + 3*comment / views).
+min_engagement_rate: 0.004
+
+# Look back 36h so afternoon runs still see this morning's viral hits.
+max_age_hours: 36
 
 # --- Topic focus additions ---
 # These EXTEND the base relevance_terms list (deduped). Keep using
